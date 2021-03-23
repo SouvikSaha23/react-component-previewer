@@ -1,23 +1,23 @@
 {
-  "name": "react-component-preview",
+	"name": "react-component-preview",
 	"displayName": "React Component Preview",
 	"description": "",
 	"version": "0.0.1",
 	"engines": {
-		"vscode": "^1.54.0"
+		"vscode": "^1.50.0"
 	},
 	"categories": [
 		"Other"
 	],
 	"activationEvents": [
-        "onCommand:react-component-preview.helloWorld"
+		"onCommand:react-component-preview.preview"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "react-component-preview.helloWorld",
-				"title": "Hello World"
+				"command": "react-component-preview.preview",
+				"title": "Preview React Component"
 			}
 		]
 	},
