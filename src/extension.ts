@@ -1,6 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
+import { getWebviewContent } from "./utils/getWebviewContent";
+import { prepareJSEntryFile } from "./utils/prepareJSEntryFile";
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -30,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 					// And restrict the webview to only loading content from our extension's `resource` directory.
 					localResourceRoots: [
-						vscode.Uri.joinPath(context.extensionUri, "resource"),
+						vscode.Uri.joinPath(context.extensionUri, "shell-app", "dist"),
 					],
 				}
 			);
@@ -40,6 +42,27 @@ export function activate(context: vscode.ExtensionContext) {
 				panel.webview,
 				context.extensionUri
 			);
+
+			/**
+			 * Experimenting
+			 */
+
+			// const editor = vscode.window.activeTextEditor;
+			// if (editor) {
+			// 	if (editor.document.languageId !== "javascript") {
+			// 		return;
+			// 	}
+			// 	const code = editor.document.getText();
+			// 	try {
+			// 		const wrapperFn = new Function(code);
+			// 		const component = wrapperFn();
+			// 		console.log(component);
+			// 	} catch (e) {
+			// 		console.log(e);
+			// 	}
+			// }
+
+			prepareJSEntryFile(context);
 		}
 	);
 
@@ -48,81 +71,3 @@ export function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
-
-const getWebviewContent = (
-	webview: vscode.Webview,
-	extensionUri: vscode.Uri
-) => {
-	// Local path to css styles
-	const stylesPathMainPath = vscode.Uri.joinPath(
-		extensionUri,
-		"resource",
-		"vscode.css"
-	);
-	// Uri to load styles into webview
-	const stylesMainUri = webview.asWebviewUri(stylesPathMainPath);
-
-	// Local path to scripts run in the webview
-	const scriptPathOnDisk = vscode.Uri.joinPath(
-		extensionUri,
-		"resource",
-		"main.js"
-	);
-	const scriptReactPathOnDisk = vscode.Uri.joinPath(
-		extensionUri,
-		"resource",
-		"react.production.min.js"
-	);
-	const scriptReactDOMPathOnDisk = vscode.Uri.joinPath(
-		extensionUri,
-		"resource",
-		"react-dom.production.min.js"
-	);
-
-	// And the uri we use to load this scripts in the webview
-	const scriptUri = webview.asWebviewUri(scriptPathOnDisk);
-	const scriptReactUri = webview.asWebviewUri(scriptReactPathOnDisk);
-	const scriptReactDOMUri = webview.asWebviewUri(scriptReactDOMPathOnDisk);
-
-	// Use a nonce to only allow specific scripts to be run
-	const nonce = getNonce();
-
-	return `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
-
-				<!--
-					Use a content security policy to only allow loading images from https or from our extension directory,
-					and only allow scripts that have a specific nonce.
-				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; img-src ${webview.cspSource} https:; script-src 'nonce-${nonce}';">
-
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-				<link href="${stylesMainUri}" rel="stylesheet">
-
-				<title>React Component Preview</title>
-			</head>
-			<body>
-				<div id="ext-view-port"></div>
-
-				<!-- Load React. -->
-				<script nonce="${nonce}" src="${scriptReactUri}"></script>
-				<script nonce="${nonce}" src="${scriptReactDOMUri}"></script>
-
-				<!-- Load our React component. -->
-				<script nonce="${nonce}" src="${scriptUri}"></script>
-			</body>
-			</html>`;
-};
-
-const getNonce = () => {
-	let text = "";
-	const possible =
-		"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-	for (let i = 0; i < 32; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
-};
