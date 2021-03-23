@@ -1,7 +1,10 @@
 import * as vscode from "vscode";
 const fs = require("fs");
 
-export const prepareJSEntryFile = (context: vscode.ExtensionContext) => {
+export const prepareJSEntryFile = (
+	context: vscode.ExtensionContext,
+	activeJSFileInEditor: string
+) => {
 	const jsFilePath = vscode.Uri.joinPath(
 		context.extensionUri,
 		"shell-app",
@@ -20,14 +23,14 @@ export const prepareJSEntryFile = (context: vscode.ExtensionContext) => {
 		jsTemplateFilePath,
 		function (err: any, data: { toString: () => any }) {
 			if (err) {
-				return console.error(err);
+				vscode.window.showErrorMessage("Failed to read active JS file!");
+				return;
 			}
 
 			const templateString = data.toString();
-			const currentEditorFile = "a.js";
 			const preparedJSContent = templateString.replace(
 				"//@@",
-				`import App from ${currentEditorFile};`
+				`import App from "${activeJSFileInEditor}";`
 			);
 
 			console.log("Prepared JS content successfully!");

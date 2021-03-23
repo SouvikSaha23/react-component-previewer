@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from a.js;
+import App from "/Users/sosah/Documents/Workspace/Experiments/React/my-app/src/App.js";
 
 const rootElement = document.getElementById("ext-view-port");
 ReactDOM.render(
 	<React.StrictMode>
-		<button>Hello</button>
+		<App />
 	</React.StrictMode>,
 	rootElement
 );

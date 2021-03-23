@@ -5,7 +5,7 @@ import ReactDOM from "react-dom";
 const rootElement = document.getElementById("ext-view-port");
 ReactDOM.render(
 	<React.StrictMode>
-		<button>Hello</button>
+		<App />
 	</React.StrictMode>,
 	rootElement
 );

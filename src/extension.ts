@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from "vscode";
+import { getActiveJSFileInEditor } from "./utils/getActiveJSFileInEditor";
 import { getWebviewContent } from "./utils/getWebviewContent";
 import { prepareJSEntryFile } from "./utils/prepareJSEntryFile";
 
@@ -20,6 +21,12 @@ export function activate(context: vscode.ExtensionContext) {
 		"react-component-preview.preview",
 		() => {
 			// The code you place here will be executed every time your command is executed
+
+			const activeJSFileInEditor = getActiveJSFileInEditor();
+			if (!activeJSFileInEditor) {
+				vscode.window.showErrorMessage("No active JS file in editor");
+				return;
+			}
 
 			// Create and show a new webview
 			const panel = vscode.window.createWebviewPanel(
@@ -43,26 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
 				context.extensionUri
 			);
 
-			/**
-			 * Experimenting
-			 */
-
-			// const editor = vscode.window.activeTextEditor;
-			// if (editor) {
-			// 	if (editor.document.languageId !== "javascript") {
-			// 		return;
-			// 	}
-			// 	const code = editor.document.getText();
-			// 	try {
-			// 		const wrapperFn = new Function(code);
-			// 		const component = wrapperFn();
-			// 		console.log(component);
-			// 	} catch (e) {
-			// 		console.log(e);
-			// 	}
-			// }
-
-			prepareJSEntryFile(context);
+			prepareJSEntryFile(context, activeJSFileInEditor);
 		}
 	);
 
