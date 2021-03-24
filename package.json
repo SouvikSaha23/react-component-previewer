@@ -1,5 +1,5 @@
 {
-	"name": "react-component-preview",
+	"name": "react-component-previewer",
 	"displayName": "React Component Preview",
 	"description": "",
 	"version": "0.0.1",
@@ -10,13 +10,13 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onCommand:react-component-preview.preview"
+		"onCommand:react-component-previewer.preview"
 	],
 	"main": "./dist/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "react-component-preview.preview",
+				"command": "react-component-previewer.preview",
 				"title": "Preview React Component"
 			}
 		]
