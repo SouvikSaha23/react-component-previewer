@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as fs from "fs";
 import { executeCommand } from "./utils/executeCommand";
 import { getValidActiveTextEditor } from "./utils/getValidActiveTextEditor";
 import { getWebviewContent } from "./utils/getWebviewContent";
@@ -13,8 +14,7 @@ export class AppPanel {
 	private readonly _extensionUri: vscode.Uri;
 	private readonly _associatedTextEditor: vscode.TextEditor;
 	private readonly _outputChannel: vscode.OutputChannel;
-	private readonly _disposableAfterSetup: vscode.Disposable;
-	private _isDevServerStarted: boolean;
+	private _disposableAfterSetup: vscode.Disposable;
 	private _disposables: vscode.Disposable[] = [];
 
 	constructor(
@@ -27,32 +27,33 @@ export class AppPanel {
 		this._extensionUri = extensionUri;
 		this._associatedTextEditor = associatedTextEditor;
 		this._disposableAfterSetup = disposableAfterSetup;
-		this._isDevServerStarted = false;
+		this._outputChannel = vscode.window.createOutputChannel(
+			"React Component Previewer"
+		);
 
+		this._init();
+	}
+
+	private _init() {
 		this._disposables.push(
 			vscode.workspace.onDidSaveTextDocument(textDocument => {
 				AppPanel.createOrShow(this._extensionUri);
 			})
 		);
 
+		/* TODO: dispose the registration */
+		this._registerBuildWatcher(this._extensionUri);
+
 		// Listen for when the panel is disposed
 		// This happens when the user closes the panel or when the panel is closed programatically
 		this._panel.onDidDispose(() => this._dispose(), null, this._disposables);
 
 		prepareEntryFile(this._extensionUri, this._associatedTextEditor);
-
-		this._outputChannel = vscode.window.createOutputChannel(
-			"React Component Previewer"
-		);
-
-		// Set the webview's initial html content
+		this._buildComponent();
 		this._renderShellApp();
 	}
 
-	private async _renderShellApp() {
-		if (!this._isDevServerStarted) {
-			await this._startDevServer();
-		}
+	private _renderShellApp() {
 		this._panel.webview.html = getWebviewContent(
 			this._panel.webview,
 			this._extensionUri
@@ -74,7 +75,7 @@ export class AppPanel {
 		}
 	}
 
-	private async _startDevServer() {
+	private async _buildComponent() {
 		const folderString = vscode.Uri.joinPath(this._extensionUri, "shell-app")
 			.fsPath;
 		const command = "yarn build";
@@ -90,7 +91,6 @@ export class AppPanel {
 			}
 			if (stdout) {
 				this._disposableAfterSetup.dispose();
-				this._isDevServerStarted = true;
 			}
 		} catch (err) {
 			const channel = this._outputChannel;
@@ -103,6 +103,38 @@ export class AppPanel {
 			channel.appendLine("Failed to start dev server.");
 			channel.show(true);
 		}
+	}
+
+	private _setDisposableAfterSetup(disposableAfterSetup: vscode.Disposable) {
+		this._disposableAfterSetup = disposableAfterSetup;
+	}
+
+	private _registerBuildWatcher(extensionUri: vscode.Uri) {
+		/* TODO: Listen for all files under shell-app/dist/    */
+		const pattern = vscode.Uri.joinPath(
+			extensionUri,
+			"shell-app",
+			"dist",
+			"bundle.js"
+		).fsPath;
+
+		let fsWait = false;
+
+		/* TODO: error handling here */
+		fs.watch(pattern, null, (event, fileName) => {
+			if (fileName) {
+				if (fsWait) {
+					return;
+				}
+				fsWait = true;
+				setTimeout(() => {
+					fsWait = false;
+				}, 100);
+
+				vscode.window.showInformationMessage("Updated file: " + fileName);
+				this._renderShellApp();
+			}
+		});
 	}
 
 	public static createOrShow(extensionUri: vscode.Uri) {
@@ -120,7 +152,10 @@ export class AppPanel {
 				activeTextEditor.document.fileName
 			) {
 				AppPanel.currentPanel._panel.reveal(vscode.ViewColumn.Beside);
-				AppPanel.currentPanel._renderShellApp();
+				AppPanel.currentPanel._buildComponent();
+				AppPanel.currentPanel._setDisposableAfterSetup(
+					vscode.window.setStatusBarMessage("Building your component..")
+				);
 				return;
 			}
 
