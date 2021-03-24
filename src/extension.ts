@@ -28,6 +28,8 @@ export function activate(context: vscode.ExtensionContext) {
 				return;
 			}
 
+			prepareJSEntryFile(context, activeJSFileInEditor);
+
 			// Create and show a new webview
 			const panel = vscode.window.createWebviewPanel(
 				"react-component-preview", // Identifies the type of the webview. Used internally
@@ -37,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
 					// Enable javascript in the webview
 					enableScripts: true,
 
-					// And restrict the webview to only loading content from our extension's `resource` directory.
+					// And restrict the webview to only loading content from our extension's `shell-app/dist/` directory.
 					localResourceRoots: [
 						vscode.Uri.joinPath(context.extensionUri, "shell-app", "dist"),
 					],
@@ -49,8 +51,6 @@ export function activate(context: vscode.ExtensionContext) {
 				panel.webview,
 				context.extensionUri
 			);
-
-			prepareJSEntryFile(context, activeJSFileInEditor);
 		}
 	);
 
