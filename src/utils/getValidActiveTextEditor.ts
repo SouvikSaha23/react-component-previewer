@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
 
-export const getActiveJSFileInEditor = () => {
+export const getValidActiveTextEditor = () => {
 	const editor = vscode.window.activeTextEditor;
 	if (!editor || editor.document.languageId !== "javascript") {
-		return "";
+		return null;
 	}
-	const activeJsFilePath = editor.document.fileName;
-	return activeJsFilePath;
+	return editor;
 };

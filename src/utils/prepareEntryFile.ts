@@ -1,19 +1,21 @@
 import * as vscode from "vscode";
 const fs = require("fs");
 
-export const prepareJSEntryFile = (
-	context: vscode.ExtensionContext,
-	activeJSFileInEditor: string
+export const prepareEntryFile = (
+	extensionUri: vscode.Uri,
+	activeTextEditor: vscode.TextEditor
 ) => {
+	const activeFileName = activeTextEditor.document.fileName;
+
 	const jsFilePath = vscode.Uri.joinPath(
-		context.extensionUri,
+		extensionUri,
 		"shell-app",
 		"src",
 		"index.js"
 	).fsPath;
 
 	const jsTemplateFilePath = vscode.Uri.joinPath(
-		context.extensionUri,
+		extensionUri,
 		"shell-app",
 		"src",
 		"indexTemplate.js"
@@ -30,7 +32,7 @@ export const prepareJSEntryFile = (
 			const templateString = data.toString();
 			const preparedJSContent = templateString.replace(
 				"//@@",
-				`import App from "${activeJSFileInEditor}";`
+				`import App from "${activeFileName}";`
 			);
 
 			console.log("Prepared JS content successfully!");
