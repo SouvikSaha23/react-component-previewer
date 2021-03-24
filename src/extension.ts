@@ -18,7 +18,13 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand("react-component-previewer.preview", () => {
 			// The code you place here will be executed every time your command is executed
-			AppPanel.createOrShow(context.extensionUri);
+			AppPanel.createAndLoad(context.extensionUri);
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.workspace.onDidSaveTextDocument(textDocument => {
+			AppPanel.updateIfExists(context.extensionUri);
 		})
 	);
 }
