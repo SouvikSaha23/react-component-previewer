@@ -30,7 +30,7 @@ export class AppPanel {
 
 		// Listen for when the panel is disposed
 		// This happens when the user closes the panel or when the panel is closed programatically
-		this._panel.onDidDispose(() => this.dispose());
+		this._panel.onDidDispose(() => this._dispose());
 
 		prepareEntryFile(this._extensionUri, this._associatedTextEditor);
 
@@ -39,10 +39,10 @@ export class AppPanel {
 		);
 
 		// Set the webview's initial html content
-		this.renderShellApp();
+		this._renderShellApp();
 	}
 
-	public async renderShellApp() {
+	private async _renderShellApp() {
 		if (!this._isDevServerStarted) {
 			await this._startDevServer();
 		}
@@ -52,57 +52,7 @@ export class AppPanel {
 		);
 	}
 
-	public static createOrShow(context: vscode.ExtensionContext) {
-		const activeTextEditor = getValidActiveTextEditor();
-		if (!activeTextEditor) {
-			vscode.window.showErrorMessage("No active JS file in editor");
-			return;
-		}
-
-		// If we already have a panel, show it if its the same file else clear previous and show new.
-		if (AppPanel.currentPanel) {
-			// If current active file is same as the previous for which panel was opened.
-			if (
-				AppPanel.currentPanel._associatedTextEditor.document.fileName ===
-				activeTextEditor.document.fileName
-			) {
-				AppPanel.currentPanel._panel.reveal(vscode.ViewColumn.Beside);
-				AppPanel.currentPanel.renderShellApp();
-				return;
-			}
-
-			AppPanel.currentPanel.dispose();
-		}
-
-		// Otherwise, create a new panel.
-		const panel = vscode.window.createWebviewPanel(
-			"react-component-previewer", // Identifies the type of the webview. Used internally
-			"React Previewer", // Title of the panel displayed to the user
-			vscode.ViewColumn.Beside, // Editor column to show the new webview panel in.
-			{
-				// Enable javascript in the webview
-				enableScripts: true,
-
-				// And restrict the webview to only loading content from our extension's `shell-app/dist/` directory.
-				localResourceRoots: [
-					vscode.Uri.joinPath(context.extensionUri, "shell-app", "dist"),
-				],
-			}
-		);
-
-		const disposableAfterSetup = vscode.window.setStatusBarMessage(
-			"Building your component.."
-		);
-
-		AppPanel.currentPanel = new AppPanel(
-			panel,
-			context.extensionUri,
-			activeTextEditor,
-			disposableAfterSetup
-		);
-	}
-
-	public dispose() {
+	private _dispose() {
 		AppPanel.currentPanel = undefined;
 		// Clean up our resources
 		this._panel.dispose();
@@ -139,5 +89,55 @@ export class AppPanel {
 			channel.appendLine("Failed to start dev server.");
 			channel.show(true);
 		}
+	}
+
+	public static createOrShow(context: vscode.ExtensionContext) {
+		const activeTextEditor = getValidActiveTextEditor();
+		if (!activeTextEditor) {
+			vscode.window.showErrorMessage("No active JS file in editor");
+			return;
+		}
+
+		// If we already have a panel, show it if its the same file else clear previous and show new.
+		if (AppPanel.currentPanel) {
+			// If current active file is same as the previous for which panel was opened.
+			if (
+				AppPanel.currentPanel._associatedTextEditor.document.fileName ===
+				activeTextEditor.document.fileName
+			) {
+				AppPanel.currentPanel._panel.reveal(vscode.ViewColumn.Beside);
+				AppPanel.currentPanel._renderShellApp();
+				return;
+			}
+
+			AppPanel.currentPanel._dispose();
+		}
+
+		// Otherwise, create a new panel.
+		const panel = vscode.window.createWebviewPanel(
+			"react-component-previewer", // Identifies the type of the webview. Used internally
+			"React Previewer", // Title of the panel displayed to the user
+			vscode.ViewColumn.Beside, // Editor column to show the new webview panel in.
+			{
+				// Enable javascript in the webview
+				enableScripts: true,
+
+				// And restrict the webview to only loading content from our extension's `shell-app/dist/` directory.
+				localResourceRoots: [
+					vscode.Uri.joinPath(context.extensionUri, "shell-app", "dist"),
+				],
+			}
+		);
+
+		const disposableAfterSetup = vscode.window.setStatusBarMessage(
+			"Building your component.."
+		);
+
+		AppPanel.currentPanel = new AppPanel(
+			panel,
+			context.extensionUri,
+			activeTextEditor,
+			disposableAfterSetup
+		);
 	}
 }
