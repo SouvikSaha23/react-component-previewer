@@ -18,21 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand("react-component-previewer.preview", () => {
 			// The code you place here will be executed every time your command is executed
-			AppPanel.createOrShow(context);
-		})
-	);
-
-	context.subscriptions.push(
-		vscode.workspace.onDidSaveTextDocument(textDocument => {
-			AppPanel.createOrShow(context);
-		})
-	);
-
-	context.subscriptions.push(
-		vscode.workspace.onDidCloseTextDocument(textDocument => {
-			// vscode.window.showInformationMessage(
-			// 	"Closed file: " + textDocument.fileName
-			// );
+			AppPanel.createOrShow(context.extensionUri);
 		})
 	);
 }

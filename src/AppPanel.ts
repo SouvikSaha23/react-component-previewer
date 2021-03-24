@@ -15,6 +15,7 @@ export class AppPanel {
 	private readonly _outputChannel: vscode.OutputChannel;
 	private readonly _disposableAfterSetup: vscode.Disposable;
 	private _isDevServerStarted: boolean;
+	private _disposables: vscode.Disposable[] = [];
 
 	constructor(
 		panel: vscode.WebviewPanel,
@@ -28,9 +29,15 @@ export class AppPanel {
 		this._disposableAfterSetup = disposableAfterSetup;
 		this._isDevServerStarted = false;
 
+		this._disposables.push(
+			vscode.workspace.onDidSaveTextDocument(textDocument => {
+				AppPanel.createOrShow(this._extensionUri);
+			})
+		);
+
 		// Listen for when the panel is disposed
 		// This happens when the user closes the panel or when the panel is closed programatically
-		this._panel.onDidDispose(() => this._dispose());
+		this._panel.onDidDispose(() => this._dispose(), null, this._disposables);
 
 		prepareEntryFile(this._extensionUri, this._associatedTextEditor);
 
@@ -58,6 +65,13 @@ export class AppPanel {
 		this._panel.dispose();
 		this._outputChannel.dispose();
 		this._disposableAfterSetup.dispose();
+
+		while (this._disposables.length) {
+			const x = this._disposables.pop();
+			if (x) {
+				x.dispose();
+			}
+		}
 	}
 
 	private async _startDevServer() {
@@ -91,7 +105,7 @@ export class AppPanel {
 		}
 	}
 
-	public static createOrShow(context: vscode.ExtensionContext) {
+	public static createOrShow(extensionUri: vscode.Uri) {
 		const activeTextEditor = getValidActiveTextEditor();
 		if (!activeTextEditor) {
 			vscode.window.showErrorMessage("No active JS file in editor");
@@ -122,9 +136,9 @@ export class AppPanel {
 				// Enable javascript in the webview
 				enableScripts: true,
 
-				// And restrict the webview to only loading content from our extension's `shell-app/dist/` directory.
+				// And restrict the webview to oextensionUrinly loading content from our extension's `shell-app/dist/` directory.
 				localResourceRoots: [
-					vscode.Uri.joinPath(context.extensionUri, "shell-app", "dist"),
+					vscode.Uri.joinPath(extensionUri, "shell-app", "dist"),
 				],
 			}
 		);
@@ -135,7 +149,7 @@ export class AppPanel {
 
 		AppPanel.currentPanel = new AppPanel(
 			panel,
-			context.extensionUri,
+			extensionUri,
 			activeTextEditor,
 			disposableAfterSetup
 		);
