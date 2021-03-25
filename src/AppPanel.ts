@@ -13,33 +13,49 @@ export class AppPanel {
 	private readonly _extensionUri: vscode.Uri;
 	private readonly _associatedTextEditor: vscode.TextEditor;
 	private readonly _outputChannel: vscode.OutputChannel;
-	private _disposableAfterSetup: vscode.Disposable;
 
 	constructor(
 		panel: vscode.WebviewPanel,
 		extensionUri: vscode.Uri,
-		associatedTextEditor: vscode.TextEditor,
-		disposableAfterSetup: vscode.Disposable
+		associatedTextEditor: vscode.TextEditor
 	) {
 		this._panel = panel;
 		this._extensionUri = extensionUri;
 		this._associatedTextEditor = associatedTextEditor;
-		this._disposableAfterSetup = disposableAfterSetup;
 		this._outputChannel = vscode.window.createOutputChannel(
 			"React Component Previewer"
 		);
+
+		// Listen for when the panel is disposed
+		// This happens when the user closes the panel or when the panel is closed programmatically
+		this._panel.onDidDispose(() => this._dispose());
 
 		this._init();
 	}
 
 	private async _init() {
-		// Listen for when the panel is disposed
-		// This happens when the user closes the panel or when the panel is closed programmatically
-		this._panel.onDidDispose(() => this._dispose());
+		await vscode.window.withProgress(
+			{
+				location: vscode.ProgressLocation.Notification,
+				title: "Building your component...",
+				cancellable: true,
+			},
+			(progress, token) => {
+				token.onCancellationRequested(() => {
+					console.log("User canceled the long running operation");
+				});
 
-		prepareEntryFile(this._extensionUri, this._associatedTextEditor);
-		await this._buildComponent();
-		this._disposableAfterSetup.dispose();
+				progress.report({ increment: 10 });
+
+				prepareEntryFile(this._extensionUri, this._associatedTextEditor);
+
+				progress.report({
+					increment: 30,
+				});
+
+				return this._buildComponent();
+			}
+		);
 		this._renderShellApp();
 	}
 
@@ -55,7 +71,6 @@ export class AppPanel {
 		// Clean up our resources
 		this._panel.dispose();
 		this._outputChannel.dispose();
-		this._disposableAfterSetup.dispose();
 	}
 
 	private async _buildComponent() {
@@ -113,15 +128,10 @@ export class AppPanel {
 			}
 		);
 
-		const disposableAfterSetup = vscode.window.setStatusBarMessage(
-			"Building your component.."
-		);
-
 		AppPanel._currentPanel = new AppPanel(
 			panel,
 			extensionUri,
-			activeTextEditor,
-			disposableAfterSetup
+			activeTextEditor
 		);
 	}
 
