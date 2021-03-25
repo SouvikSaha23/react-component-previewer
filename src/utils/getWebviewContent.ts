@@ -8,7 +8,7 @@ export const getWebviewContent = (
 	const stylesPathMainPath = vscode.Uri.joinPath(
 		extensionUri,
 		"shell-app",
-		"dist",
+		"src",
 		"vscode.css"
 	);
 	// Uri to load styles into webview

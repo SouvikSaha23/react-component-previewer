@@ -1,0 +1,25 @@
+:root {
+	--container-padding: 8px;
+}
+
+body {
+	color: var(--vscode-foreground);
+	font-size: var(--vscode-font-size);
+	font-weight: var(--vscode-font-weight);
+	font-family: var(--vscode-font-family);
+    background-color: black;
+    justify-content: center;
+    padding: var(--container-padding);
+    margin: 0;
+    overflow: hidden;
+}
+
+#ext-view-port{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    width: calc(100vw - 2*var(--container-padding));
+    height: calc(100vh - 2*var(--container-padding));
+    overflow: auto;
+}

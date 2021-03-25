@@ -121,9 +121,10 @@ export class AppPanel {
 				// Enable javascript in the webview
 				enableScripts: true,
 
-				// And restrict the webview to extensionUri only loading content from our extension's `shell-app/dist/` directory.
+				// And restrict the webview to extensionUri only loading content from our extension's `shell-app/dist/ and shell-app/src/` directory.
 				localResourceRoots: [
 					vscode.Uri.joinPath(extensionUri, "shell-app", "dist"),
+					vscode.Uri.joinPath(extensionUri, "shell-app", "src"),
 				],
 			}
 		);
