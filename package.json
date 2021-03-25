@@ -17,9 +17,19 @@
 		"commands": [
 			{
 				"command": "react-component-previewer.preview",
-				"title": "Preview React Component"
+				"title": "Preview React Component",
+				"icon": "$(preview)"
 			}
-		]
+		],
+		"menus": {
+			"editor/title": [
+				{
+					"when": "resourceLangId == javascript",
+					"command": "react-component-previewer.preview",
+					"group": "navigation"
+				}
+			]
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "yarn run package",
