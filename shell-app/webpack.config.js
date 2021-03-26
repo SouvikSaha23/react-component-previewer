@@ -20,12 +20,39 @@ module.exports = {
 			{
 				test: /\.ts(x?)$/,
 				exclude: /node_modules/,
-				use: ["babel-loader"],
+				use: {
+					loader: "babel-loader",
+					options: {
+						presets: [
+							"@babel/preset-env",
+							[
+								"@babel/preset-react",
+								{
+									runtime: "automatic",
+								},
+							],
+							"@babel/preset-typescript",
+						],
+					},
+				},
 			},
 			{
 				test: /\.js$/,
-				loader: "babel-loader",
 				exclude: /node_modules/,
+				use: {
+					loader: "babel-loader",
+					options: {
+						presets: [
+							"@babel/preset-env",
+							[
+								"@babel/preset-react",
+								{
+									runtime: "automatic",
+								},
+							],
+						],
+					},
+				},
 			},
 			{
 				test: /\.css$/i,
