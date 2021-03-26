@@ -24,7 +24,7 @@
 		"menus": {
 			"editor/title": [
 				{
-					"when": "resourceLangId == javascript",
+					"when": "resourceExtname == .js || resourceExtname == .tsx",
 					"command": "react-component-previewer.preview",
 					"group": "navigation"
 				}

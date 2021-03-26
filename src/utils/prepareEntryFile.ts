@@ -6,38 +6,41 @@ export const prepareEntryFile = (
 	activeTextEditor: vscode.TextEditor
 ) => {
 	const activeFileName = activeTextEditor.document.fileName;
+	const activeFileNameWithoutExtension = activeFileName.replace(
+		/\.[^/.]+$/,
+		""
+	);
 
-	const jsFilePath = vscode.Uri.joinPath(
+	const entryFilePath = vscode.Uri.joinPath(
 		extensionUri,
 		"shell-app",
 		"src",
-		"index.js"
+		"index.tsx"
 	).fsPath;
 
-	const jsTemplateFilePath = vscode.Uri.joinPath(
+	const templateFilePath = vscode.Uri.joinPath(
 		extensionUri,
 		"shell-app",
 		"src",
-		"indexTemplate.js"
+		"indexTemplate.tsx"
 	).fsPath;
 
 	fs.readFile(
-		jsTemplateFilePath,
+		templateFilePath,
 		function (err: any, data: { toString: () => any }) {
 			if (err) {
-				vscode.window.showErrorMessage("Failed to read active JS file!");
+				vscode.window.showErrorMessage("Failed to read active .js/.tsx file!");
 				return;
 			}
 
 			const templateString = data.toString();
-			const preparedJSContent = templateString.replace(
-				"//@@",
-				`import App from "${activeFileName}";`
-			);
+			const preparedContent = templateString
+				.replace("//@@", `import App from "${activeFileNameWithoutExtension}";`)
+				.replace("{/*@@*/}", "<App/>");
 
-			console.log("Prepared JS content successfully!");
+			console.log("Prepared entry file successfully!");
 
-			fs.writeFile(jsFilePath, preparedJSContent, (err: string) => {
+			fs.writeFile(entryFilePath, preparedContent, (err: string) => {
 				if (err) {
 					console.error("Error occurred: " + err);
 				} else {
