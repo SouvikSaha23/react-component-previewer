@@ -2,7 +2,7 @@ const path = require("path");
 const svgToMiniDataURI = require("mini-svg-data-uri");
 
 module.exports = {
-	entry: path.resolve(__dirname, "src", "index.js"),
+	entry: path.resolve(__dirname, "src", "index.tsx"),
 	devServer: {
 		contentBase: path.resolve(__dirname, "dist"),
 		writeToDisk: true,
@@ -12,12 +12,47 @@ module.exports = {
 		path: path.resolve(__dirname, "dist"),
 		clean: true,
 	},
+	resolve: {
+		extensions: [".ts", ".tsx", ".js"],
+	},
 	module: {
 		rules: [
 			{
-				test: /\.js$/,
-				loader: "babel-loader",
+				test: /\.ts(x?)$/,
 				exclude: /node_modules/,
+				use: {
+					loader: "babel-loader",
+					options: {
+						presets: [
+							"@babel/preset-env",
+							[
+								"@babel/preset-react",
+								{
+									runtime: "automatic",
+								},
+							],
+							"@babel/preset-typescript",
+						],
+					},
+				},
+			},
+			{
+				test: /\.js$/,
+				exclude: /node_modules/,
+				use: {
+					loader: "babel-loader",
+					options: {
+						presets: [
+							"@babel/preset-env",
+							[
+								"@babel/preset-react",
+								{
+									runtime: "automatic",
+								},
+							],
+						],
+					},
+				},
 			},
 			{
 				test: /\.css$/i,
