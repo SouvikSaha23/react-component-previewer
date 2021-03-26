@@ -74,11 +74,10 @@ export class AppPanel {
 	}
 
 	private async _buildComponent() {
-		const folderString = vscode.Uri.joinPath(this._extensionUri, "shell-app")
-			.fsPath;
+		const folderString = vscode.Uri.joinPath(this._extensionUri).fsPath;
 
 		/* TODO: uninstall webpack-dev-server */
-		const command = "yarn build";
+		const command = "yarn shell-app:build";
 
 		try {
 			const { stdout, stderr } = await executeCommand(command, {
